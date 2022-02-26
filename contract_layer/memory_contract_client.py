@@ -57,15 +57,15 @@ class InMemoryContractProxy:
             raise PermissionError("Not authorized for transfer")
 
     def get_nft(self, nft_id) -> dict:
-        nft: NFT = self._nft_storage[nft_id]
+        nft: NFT = self._nft_storage.get(nft_id)
         if nft:
             return nft.render()
         return dict()
 
-    def __is_nft_owner(self, nft_id, caller):
+    def __is_nft_owner(self, caller, nft_id):
         nft: NFT = self._nft_storage.get(nft_id)
         logging.getLogger("memory").info("nft is %s", nft.render())
-        return nft and nft.get_owner() is caller
+        return nft and nft.get_owner() == caller
 
     def __is_authorized_for_write(self, caller, nft_id):
         nft = self._nft_storage[nft_id]
