@@ -27,7 +27,7 @@ class ReceiverInfo:
     KEY = 'receiver'
 
     def __init__(self, data: dict):
-        receiver_info = data[TransferNFTPayload.RECEIVER]
+        receiver_info = data[ReceiverInfo.KEY]
         self.user_id = receiver_info['user_id']
         self.email = receiver_info['email']
         self.name = receiver_info['name']

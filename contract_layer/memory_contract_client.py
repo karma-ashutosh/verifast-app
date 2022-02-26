@@ -1,3 +1,4 @@
+import json
 import logging
 
 from contract_layer.interface.contract_client_provider import ContractClientProvider
@@ -23,8 +24,9 @@ class InMemoryContractProxy:
             raise "Only contract owner can create new NFT"
 
         nft_id = nft.get_id()
-        if self._nft_storage[nft_id]:
+        if self._nft_storage.get(nft_id):
             raise ValueError("NFT with id %s already exists for brand %s".format(nft_id, self.brand_id))
+        self.log.info("saving nft with Id %s, %s", nft_id, json.dumps(nft.render()))
         self._nft_storage[nft_id] = nft
 
     def authorize_transfer(self, caller, nft_id, to_user_id):
@@ -61,8 +63,9 @@ class InMemoryContractProxy:
         return dict()
 
     def __is_nft_owner(self, nft_id, caller):
-        nft = self._nft_storage[nft_id]
-        return nft and nft.get_owner() == caller
+        nft: NFT = self._nft_storage.get(nft_id)
+        logging.getLogger("memory").info("nft is %s", nft.render())
+        return nft and nft.get_owner() is caller
 
     def __is_authorized_for_write(self, caller, nft_id):
         nft = self._nft_storage[nft_id]
@@ -78,7 +81,7 @@ class _ContractFactory:
 
     @staticmethod
     def get_contract(brand_id) -> InMemoryContractProxy:
-        if not _ContractFactory._contract_address[brand_id]:
+        if not _ContractFactory._contract_address.get(brand_id):
             _ContractFactory._contract_address[brand_id] = InMemoryContractProxy(brand_id)
         return _ContractFactory._contract_address[brand_id]
 
