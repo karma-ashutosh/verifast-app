@@ -11,4 +11,4 @@ class ClientFactory:
 
     def get_client(self, brand_id, user_id) -> ContractClient:
         user_data: UserData = self.__user_data_provider.get_user_info(user_id)
-        return self.__contract_client_provider.contract_client(brand_id, user_data.account_id)
+        return self.__contract_client_provider.contract_client(brand_id, user_data.username)

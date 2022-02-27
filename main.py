@@ -8,12 +8,14 @@ from common import setup_logging
 from contract_layer.client_factory import ClientFactory
 from contract_layer.interface.nft import NFT
 from contract_layer.memory_contract_client import InMemoryClientProvider
+from user_layer.interface.sql_lite_backed_provider import UserDAO
 from user_layer.interface.user_data_provider import InMemoryUserDataProvider
 from models.request_models import CreateUserPayload
 from models.user_data import UserData
 
 app: Flask = Flask(__name__)
-user_data_provider = InMemoryUserDataProvider()
+# user_data_provider = InMemoryUserDataProvider()
+user_data_provider = UserDAO()
 contract_client_provider = InMemoryClientProvider()
 client_factory = ClientFactory(user_data_provider, contract_client_provider)
 
@@ -51,7 +53,7 @@ def site_map():
 @app.route("/new-account", methods=["POST"])
 def create_user_account():
     payload = CreateUserPayload(request.json)
-    user_data: UserData = user_data_provider.create_user(payload.username, payload)
+    user_data: UserData = user_data_provider.insert(payload.username, payload)
     return user_data.render()
 
 

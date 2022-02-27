@@ -1,3 +1,5 @@
+import sqlite3
+from sqlite3 import Connection, Cursor
 from abc import ABC, abstractmethod
 
 from models.request_models import CreateUserPayload
@@ -10,11 +12,11 @@ class UserDataProvider(ABC):
         pass
 
     @abstractmethod
-    def create_user(self, account_id, payload: dict) -> UserData:
+    def create_user(self, username, payload: dict) -> UserData:
         pass
 
     @abstractmethod
-    def get_user_info(self, account_id) -> UserData:
+    def get_user_info(self, username) -> UserData:
         pass
 
 
@@ -24,16 +26,17 @@ class InMemoryUserDataProvider(UserDataProvider):
         super().__init__()
         self._user_data_storage = dict()
 
-    def create_user(self, account_id, payload: CreateUserPayload) -> UserData:
-        if self.__exists(account_id):
-            raise ValueError("User with accountId %s already exists".format(account_id))
-        self._user_data_storage[account_id] = SimplUserData(account_id=account_id, user_name=payload.username, user_email=payload.email)
-        return self.get_user_info(account_id)
+    def create_user(self, username, payload: CreateUserPayload) -> UserData:
+        if self.__exists(username):
+            raise ValueError("User with accountId %s already exists".format(username))
+        self._user_data_storage[username] = SimplUserData(username=username, name=payload.username, email=payload.email)
+        return self.get_user_info(username)
 
-    def get_user_info(self, account_id) -> UserData:
-        if not self.__exists(account_id):
+    def get_user_info(self, username) -> UserData:
+        if not self.__exists(username):
             raise ValueError("Account not found or not authorized")
-        return self._user_data_storage[account_id]
+        return self._user_data_storage[username]
 
     def __exists(self, account_id):
         return account_id in self._user_data_storage.keys()
+
