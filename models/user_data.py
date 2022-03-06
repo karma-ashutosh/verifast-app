@@ -29,11 +29,12 @@ class SimplUserData(UserData):
 
 class RSAUserData(SimplUserData):
 
-    def __init__(self, username=None, email=None, public_key=None, private_key=None, account_id=None):
+    def __init__(self, username=None, password=None, email=None, public_key=None, private_key=None, account_id=None):
         super().__init__(username, username, email)
         self.public_key = public_key
         self.private_key = private_key
         self.account_id = account_id
+        self.password = password
 
     def create_new_key_pair(self):
         self.public_key = "publicKey"

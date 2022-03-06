@@ -1,7 +1,7 @@
-from contract_layer.interface.contract_client import ContractClient
-from contract_layer.interface.contract_client_provider import ContractClientProvider
+from contract_layer.contract_client import ContractClient
+from contract_layer.contract_client_provider import ContractClientProvider
 from models.user_data import UserData
-from user_layer.interface.user_data_provider import UserDataProvider
+from user_layer.user_data_provider import UserDataProvider
 
 
 class ClientFactory:

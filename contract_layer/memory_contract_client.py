@@ -1,9 +1,9 @@
 import json
 import logging
 
-from contract_layer.interface.contract_client_provider import ContractClientProvider
-from contract_layer.interface.nft import NFT, SimpleNFT
-from contract_layer.interface.contract_client import ContractClient
+from contract_layer.contract_client_provider import ContractClientProvider
+from contract_layer.nft import NFT, SimpleNFT
+from contract_layer.contract_client import ContractClient
 from models.request_models import CreateNFTPayload
 
 ID = 'id'

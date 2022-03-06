@@ -1,6 +1,6 @@
 from  abc import ABC, abstractmethod
 
-from contract_layer.interface.contract_client import ContractClient
+from contract_layer.contract_client import ContractClient
 
 
 class ContractClientProvider(ABC):

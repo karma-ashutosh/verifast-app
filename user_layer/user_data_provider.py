@@ -1,9 +1,8 @@
-import sqlite3
-from sqlite3 import Connection, Cursor
 from abc import ABC, abstractmethod
 
 from models.request_models import CreateUserPayload
 from models.user_data import UserData, SimplUserData
+from user_layer.user_dao import UserDAO
 
 
 class UserDataProvider(ABC):
@@ -12,7 +11,7 @@ class UserDataProvider(ABC):
         pass
 
     @abstractmethod
-    def create_user(self, username, payload: dict) -> UserData:
+    def create_user(self, username, payload: CreateUserPayload) -> UserData:
         pass
 
     @abstractmethod
@@ -39,4 +38,19 @@ class InMemoryUserDataProvider(UserDataProvider):
 
     def __exists(self, account_id):
         return account_id in self._user_data_storage.keys()
+
+
+class DaoBackedUserDataProvider(UserDataProvider):
+    def __init__(self, user_dao: UserDAO):
+        super().__init__()
+        self.user_dao: UserDAO = user_dao
+
+    def create_user(self, username, payload: CreateUserPayload) -> UserData:
+        return self.user_dao.insert(username, payload)
+
+    def get_user_info(self, username) -> UserData:
+        row = self.user_dao.fetch_by_primary_key(username)
+        if not row:
+            raise ValueError("Account not found or not authorized")
+        return row
 
