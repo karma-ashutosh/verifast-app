@@ -34,7 +34,7 @@ def brownie_transfer_fund(username, password, target_address, amount_eth):
 def brownie_create_nft(username, password, attributes=None):
     operation = 'create_nft'
     output_path = __file_path(operation, username)
-    create_nft = "brownie run script/deploy_and_create {} {} {} {} --network {}" \
+    create_nft = "brownie run scripts/deploy_and_create {} {} {} {} --network {}" \
         .format(operation, username, password, output_path, network_id)
     j = __execute_and_get(create_nft, output_path)
     __nft_attrs[j['tokenId']] = attributes
@@ -44,7 +44,7 @@ def brownie_create_nft(username, password, attributes=None):
 def brownie_transfer_nft(username, password, nft_id, target_address):
     operation = 'transfer_nft'
     output_path = __file_path(operation, username)
-    transfer_nft = "brownie run script/deploy_and_create {} {} {} {} {} {} --network {}" \
+    transfer_nft = "brownie run scripts/deploy_and_create {} {} {} {} {} {} --network {}" \
         .format(operation, username, password, nft_id, target_address, output_path, network_id)
     j = __execute_and_get(transfer_nft, output_path)
     return j
@@ -53,7 +53,7 @@ def brownie_transfer_nft(username, password, nft_id, target_address):
 def brownie_claim_nft(username, password, nft_id, approver):
     operation = "claim_approved"
     output_path = __file_path(operation, username)
-    claim_approved = "brownie run script/deploy_and_create {} {} {} {} {} {} --network {}" \
+    claim_approved = "brownie run scripts/deploy_and_create {} {} {} {} {} {} --network {}" \
         .format(operation, username, password, nft_id, approver, output_path, network_id)
     j = __execute_and_get(claim_approved, output_path)
     return j
@@ -62,7 +62,7 @@ def brownie_claim_nft(username, password, nft_id, approver):
 def get_all_nft(username, password):
     operation = "get_all_nfts"
     output_path = __file_path(operation, username)
-    get_all_nfts = "brownie run script/deploy_and_create {} {} {} {} --network {}" \
+    get_all_nfts = "brownie run scripts/deploy_and_create {} {} {} {} --network {}" \
         .format(operation, username, password, output_path, network_id)
     j = __execute_and_get(get_all_nfts, output_path)
     return j
@@ -71,8 +71,8 @@ def get_all_nft(username, password):
 def brownie_get_nft_info(nft_id):
     operation = "get_nft"
     output_path = __file_path(operation, "NA")
-    claim_approved = "brownie run script/deploy_and_create {} {} {} {} --network {}" \
-        .format(operation, username, password, output_path, network_id)
+    claim_approved = "brownie run scripts/deploy_and_create {} {} {} --network {}" \
+        .format(operation, nft_id, output_path, network_id)
     j = __execute_and_get(claim_approved, output_path)
     return j
 

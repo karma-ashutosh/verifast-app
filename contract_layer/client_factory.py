@@ -8,6 +8,5 @@ class ClientFactory:
     def __init__(self, user_data_provider: UserDataProvider):
         self.__user_data_provider = user_data_provider
 
-    def get_client(self, brand_id, user_id) -> ContractClient:
-        user_data: UserData = self.__user_data_provider.get_user_info(user_id)
+    def get_client(self, brand_id, user_data: UserData) -> ContractClient:
         return BrownieBackedClient(brand_id, user_data)

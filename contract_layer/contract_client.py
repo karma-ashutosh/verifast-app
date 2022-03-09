@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 
 from models.request_models import CreateNFTPayload
+from models.user_data import UserData
 
 
 class ContractClient(ABC):
-    def __init__(self, brand_id, account_id):
+    def __init__(self, brand_id, user_data: UserData):
         self.brand_id = brand_id
-        self.account_id = account_id
+        self.user_data = user_data
 
     @abstractmethod
     def create_nft(self, payload: CreateNFTPayload) -> dict:

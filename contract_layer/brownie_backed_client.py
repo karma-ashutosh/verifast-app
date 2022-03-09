@@ -8,7 +8,7 @@ from general_util import *
 class BrownieBackedClient(ContractClient):
 
     def __init__(self, brand_id, user_data: UserData):
-        super().__init__(brand_id, user_data.account_id)
+        super().__init__(brand_id, user_data)
         self.user_data: UserData = user_data
         self.username = user_data.username
         self.password = user_data.password
