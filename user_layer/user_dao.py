@@ -4,8 +4,9 @@ import json
 from commons.dao import AbstractSqlBackedDAO
 from commons.rsa_util import generate_key_pair
 from models.request_models import CreateUserPayload
-from models.user_data import RSAUserData, UserData
-from general_util import execute_command_and_get_console_output, brownie_get_account_address, brownie_transfer_fund
+from models.user_data import UserData, UserData
+from general_util import brownie_get_account_address, brownie_transfer_fund, \
+    brownie_generate_account
 
 
 class UserDAO(AbstractSqlBackedDAO):
@@ -18,7 +19,7 @@ class UserDAO(AbstractSqlBackedDAO):
 
     @staticmethod
     def _dict_factory(cursor, row) -> UserData:
-        user_info = RSAUserData()
+        user_info = UserData()
         for idx, col in enumerate(cursor.description):
             value = row[idx]
             col_name = col[0]
@@ -63,10 +64,9 @@ class UserDAO(AbstractSqlBackedDAO):
         return generate_key_pair()
 
     def __create_blockchain_account(self, username, password, private_key) -> str:
-        create_account = 'brownie accounts generate {}'.format(username)
-        result = execute_command_and_get_console_output(create_account, password)
+        brownie_generate_account(username, password)
         account_address = brownie_get_account_address(username, password)
         transfer_fund = brownie_transfer_fund('ashutosh', 'lambda', account_address, 5)
         print("Transferred fund to new account: {}".format(json.dumps(transfer_fund)))
-        return username
+        return account_address
 

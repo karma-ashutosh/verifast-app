@@ -1,14 +1,13 @@
 from contract_layer.contract_client import ContractClient
-from contract_layer.contract_client_provider import ContractClientProvider
 from models.user_data import UserData
 from user_layer.user_data_provider import UserDataProvider
+from contract_layer.brownie_backed_client import BrownieBackedClient
 
 
 class ClientFactory:
-    def __init__(self, user_data_provider: UserDataProvider, contract_client_provider: ContractClientProvider):
+    def __init__(self, user_data_provider: UserDataProvider):
         self.__user_data_provider = user_data_provider
-        self.__contract_client_provider = contract_client_provider
 
     def get_client(self, brand_id, user_id) -> ContractClient:
         user_data: UserData = self.__user_data_provider.get_user_info(user_id)
-        return self.__contract_client_provider.contract_client(brand_id, user_data.username)
+        return BrownieBackedClient(brand_id, user_data)

@@ -17,11 +17,11 @@ class ContractClient(ABC):
         pass
 
     @abstractmethod
-    def accept_transfer(self, nft_id):
+    def accept_transfer(self, nft_id, sender):
         pass
 
     @abstractmethod
-    def reject_transfer(self, nft_id):
+    def reject_transfer(self, nft_id, sender):
         pass
 
     @abstractmethod

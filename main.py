@@ -6,26 +6,26 @@ from flask import Flask, request, url_for
 import models.request_models
 from common import setup_logging
 from contract_layer.client_factory import ClientFactory
-from contract_layer.memory_contract_client import InMemoryClientProvider
 from user_layer.user_data_provider import DaoBackedUserDataProvider
 from user_layer.user_dao import UserDAO
 from models.request_models import CreateUserPayload
-from models.user_data import UserData
+from models.user_data import UserData, UserData
 
 app: Flask = Flask(__name__)
 user_data_provider = DaoBackedUserDataProvider(UserDAO())
-contract_client_provider = InMemoryClientProvider()
-client_factory = ClientFactory(user_data_provider, contract_client_provider)
+client_factory = ClientFactory(user_data_provider)
 
 setup_logging()
 log: Logger = logging.getLogger("mainLogger")
 
 
-def get_authenticated_user_id() -> str:
+def get_authenticated_user() -> UserData:
     user_id = request.headers.get('user-id')
-    if not user_id:
-        raise PermissionError("User not authenticated")
-    return user_id
+    password = request.headers.get('password')
+    user_info: UserData = user_data_provider.get_user_info(user_id)
+    if user_info.password != password:
+        raise "Username or password not correct"
+    return user_info
 
 
 def has_no_empty_params(rule):
@@ -57,7 +57,7 @@ def create_user_account():
 
 @app.route("/brand/<brand_id>/nft/<nft_id>", methods=["GET"])
 def get_nft(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = get_authenticated_user()
     client = client_factory.get_client(brand_id, caller)
     nft: dict = client.get_nft(nft_id)
     return {"response": nft}
@@ -68,7 +68,7 @@ def create_nft(brand_id):
     data = request.json
     payload = models.request_models.CreateNFTPayload(data)
 
-    caller = get_authenticated_user_id()
+    caller = get_authenticated_user()
     client = client_factory.get_client(brand_id, caller)
     nft: dict = client.create_nft(payload)
     return json.dumps({"response": nft}, indent=1)
@@ -79,7 +79,7 @@ def approve_transfer(brand_id, nft_id):
     data = request.json
     payload = models.request_models.TransferNFTPayload(data)
 
-    caller = get_authenticated_user_id()
+    caller = get_authenticated_user()
     client = client_factory.get_client(brand_id, caller)
 
     client.transfer_nft(nft_id, payload.receiver.user_id)
@@ -88,7 +88,7 @@ def approve_transfer(brand_id, nft_id):
 
 @app.route("/brand/<brand_id>/nft/<nft_id>/accept-transfer", methods=["POST"])
 def accept_transfer(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = get_authenticated_user()
     client = client_factory.get_client(brand_id, caller)
 
     client.accept_transfer(nft_id)
@@ -97,7 +97,7 @@ def accept_transfer(brand_id, nft_id):
 
 @app.route("/brand/<brand_id>/nft/<nft_id>/reject-transfer", methods=["POST"])
 def reject_transfer(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = get_authenticated_user()
     client = client_factory.get_client(brand_id, caller)
 
     client.reject_transfer(nft_id)
