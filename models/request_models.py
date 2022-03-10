@@ -41,12 +41,14 @@ class TransferNFTPayload:
 class CreateUserPayload:
     KEY = 'user_data'
     USER_NAME = 'user_name'
+    PASSWORD = 'password'
     NAME = 'name'
     EMAIL = 'email'
 
     def __init__(self, data:dict):
         user_info = data[CreateUserPayload.KEY]
         self.username = user_info[CreateUserPayload.USER_NAME]
+        self.password = user_info[CreateUserPayload.PASSWORD]
         self.email = user_info[CreateUserPayload.EMAIL]
         self.name = user_info[CreateUserPayload.NAME]
 

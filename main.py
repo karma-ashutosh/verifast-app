@@ -6,28 +6,17 @@ from flask import Flask, request, url_for
 import models.request_models
 from common import setup_logging
 from contract_layer.client_factory import ClientFactory
-from contract_layer.interface.nft import NFT
-from contract_layer.memory_contract_client import InMemoryClientProvider
-from user_layer.interface.sql_lite_backed_provider import UserDAO
-from user_layer.interface.user_data_provider import InMemoryUserDataProvider
+from user_layer.user_data_provider import DaoBackedUserDataProvider
+from user_layer.user_dao import UserDAO
 from models.request_models import CreateUserPayload
-from models.user_data import UserData
+from models.user_data import UserData, UserData
 
 app: Flask = Flask(__name__)
-# user_data_provider = InMemoryUserDataProvider()
-user_data_provider = UserDAO()
-contract_client_provider = InMemoryClientProvider()
-client_factory = ClientFactory(user_data_provider, contract_client_provider)
+user_data_provider = DaoBackedUserDataProvider(UserDAO())
+client_factory = ClientFactory(user_data_provider)
 
 setup_logging()
 log: Logger = logging.getLogger("mainLogger")
-
-
-def get_authenticated_user_id() -> str:
-    user_id = request.headers.get('user-id')
-    if not user_id:
-        raise PermissionError("User not authenticated")
-    return user_id
 
 
 def has_no_empty_params(rule):
@@ -53,13 +42,13 @@ def site_map():
 @app.route("/new-account", methods=["POST"])
 def create_user_account():
     payload = CreateUserPayload(request.json)
-    user_data: UserData = user_data_provider.insert(payload.username, payload)
+    user_data: UserData = user_data_provider.create_user(payload.username, payload)
     return user_data.render()
 
 
 @app.route("/brand/<brand_id>/nft/<nft_id>", methods=["GET"])
 def get_nft(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = __get_request_user()
     client = client_factory.get_client(brand_id, caller)
     nft: dict = client.get_nft(nft_id)
     return {"response": nft}
@@ -70,7 +59,7 @@ def create_nft(brand_id):
     data = request.json
     payload = models.request_models.CreateNFTPayload(data)
 
-    caller = get_authenticated_user_id()
+    caller = __get_request_user()
     client = client_factory.get_client(brand_id, caller)
     nft: dict = client.create_nft(payload)
     return json.dumps({"response": nft}, indent=1)
@@ -81,26 +70,50 @@ def approve_transfer(brand_id, nft_id):
     data = request.json
     payload = models.request_models.TransferNFTPayload(data)
 
-    caller = get_authenticated_user_id()
+    caller = __get_request_user()
     client = client_factory.get_client(brand_id, caller)
 
-    client.transfer_nft(nft_id, payload.receiver.user_id)
+    receiver = __get_authenticated_user(payload.receiver.user_id, password=None)
+    client.transfer_nft(nft_id, receiver.account_id)
     return client.get_nft(nft_id)
 
 
 @app.route("/brand/<brand_id>/nft/<nft_id>/accept-transfer", methods=["POST"])
 def accept_transfer(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = __get_request_user()
     client = client_factory.get_client(brand_id, caller)
 
-    client.accept_transfer(nft_id)
+    approver = __get_authenticated_user(request.args.get('approver'))
+    client.accept_transfer(nft_id, approver.account_id)
     return client.get_nft(nft_id)
 
 
 @app.route("/brand/<brand_id>/nft/<nft_id>/reject-transfer", methods=["POST"])
 def reject_transfer(brand_id, nft_id):
-    caller = get_authenticated_user_id()
+    caller = __get_request_user()
     client = client_factory.get_client(brand_id, caller)
 
-    client.reject_transfer(nft_id)
+    approver = __get_authenticated_user(request.args.get('approver'))
+
+    client.reject_transfer(nft_id, approver.account_id)
     return client.get_nft(nft_id)
+
+
+def __get_request_user() -> UserData:
+    username = request.headers.get('username')
+    password = request.headers.get('password')
+    if not password:
+        raise Exception("user password cannot be empty")
+    return __get_authenticated_user(username, password)
+
+
+def __get_authenticated_user(username, password=None) -> UserData:
+    user_info: UserData = user_data_provider.get_user_info(username)
+
+    if not password:
+        user_info.clear_pass()
+    elif user_info.password != password:
+        raise Exception("Username or password not correct")
+    return user_info
+
+

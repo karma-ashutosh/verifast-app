@@ -1,40 +1,19 @@
-import abc
-from abc import ABC
+class UserData:
 
-from models.request_models import CreateUserPayload
-
-
-class UserData(ABC):
-    def __init__(self, username):
-        self.username = username
-
-    @abc.abstractmethod
-    def render(self) -> dict:
-        pass
-
-
-class SimplUserData(UserData):
-    def __init__(self, username, name, email):
-        super().__init__(username)
-        self.name = name
+    def __init__(self, username=None, password=None, email=None, public_key=None, private_key=None, account_id=None):
+        self.name = username
         self.email = email
-
-    def render(self):
-        return {
-            'name': self.name,
-            'email': self.email,
-            'username': self.username
-        }
-
-
-class RSAUserData(SimplUserData):
-
-    def __init__(self, username=None, email=None, public_key=None, private_key=None, account_id=None):
-        super().__init__(username, username, email)
+        self.username = username
+        self.password = password
         self.public_key = public_key
         self.private_key = private_key
         self.account_id = account_id
 
-    def create_new_key_pair(self):
-        self.public_key = "publicKey"
-        self.private_key = "privateKey"
+    def clear_pass(self):
+        self.password = None
+
+    def render(self) -> dict:
+        return {
+            'username': self.username,
+            'account_id': self.account_id
+        }
